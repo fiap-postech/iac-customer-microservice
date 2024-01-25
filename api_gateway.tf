@@ -14,7 +14,7 @@ resource "aws_apigatewayv2_integration" "apigw_integration" {
 
 resource "aws_apigatewayv2_route" "apigw_route" {
   api_id             = data.aws_apigatewayv2_api.tech_challenge_api.id
-  route_key          = "ANY /product/{proxy+}"
+  route_key          = "ANY /${lower(local.context_name)}/{proxy+}"
   authorization_type = "CUSTOM"
   authorizer_id      = "cfoofd"
   target             = "integrations/${aws_apigatewayv2_integration.apigw_integration.id}"
