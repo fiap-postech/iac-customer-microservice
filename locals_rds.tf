@@ -1,7 +1,7 @@
 locals {
   rds = {
     sg = {
-      name = "rds_sg"
+      name = "${local.project_name}-rds_sg"
       ingress = {
         from_port = 3306
         to_port   = 3306
