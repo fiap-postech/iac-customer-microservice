@@ -83,6 +83,10 @@ locals {
           {
             name  = "db.username"
             value = local.rds.setup.user.name
+          },
+          {
+            name = "db.schema"
+            value = local.rds.setup.schema.name
           }
         ]
       }
