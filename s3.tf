@@ -45,5 +45,5 @@ resource "aws_s3_bucket_acl" "customer_data_removal_bucket_acl" {
   ]
 
   bucket = aws_s3_bucket.customer_data_removal_bucket.id
-  acl    = "public-read"
+  acl    = "private"
 }
