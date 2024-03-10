@@ -162,15 +162,77 @@ resource "aws_iam_role_policy" "service_execution_policy" {
         Effect = "Allow"
         Action = "secretsmanager:GetSecretValue"
         Resource = [
-          aws_secretsmanager_secret.app_database_password_secret.arn
+          aws_secretsmanager_secret.app_database_password_secret.arn,
+          aws_secretsmanager_secret.aes_algorithm.arn,
+          aws_secretsmanager_secret.aes_password.arn,
+          aws_secretsmanager_secret.aes_iv.arn
         ]
-      }
+      },
+      {
+        Sid    = "03"
+        Effect = "Allow"
+        Action = [
+          "sns:Publish",
+        ]
+        Resource = [
+          aws_sns_topic.customer_data_removal_topic.arn,
+        ]
+      },
+      {
+        Sid    = "04"
+        Effect = "Allow"
+        Action = [
+          "sns:ListTopics"
+        ]
+        Resource = "*"
+      },
+      {
+        "Sid" : "05",
+        "Action" : [
+          "sqs:GetQueueUrl",
+          "sqs:SendMessageBatch",
+          "sqs:ReceiveMessage",
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:DeleteMessage"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          aws_sqs_queue.remove_customer_data_queue.arn,
+          aws_sqs_queue.remove_customer_data_dlq.arn,
+          aws_sqs_queue.removed_customer_data_queue.arn,
+          aws_sqs_queue.removed_customer_data_dlq.arn,
+        ],
+      },
+      {
+        "Sid" : "06",
+        "Action" : [
+          "s3:ListBucket"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          aws_s3_bucket.customer_data_removal_bucket.arn
+        ],
+      },
+      {
+        "Sid" : "07",
+        "Action" : [
+          "s3:*Object"
+        ],
+        "Effect" : "Allow",
+        "Resource" : [
+          "${aws_s3_bucket.customer_data_removal_bucket.arn}/*"
+        ],
+      },
     ]
   })
 
   depends_on = [
     aws_iam_role.service_execution_role,
-    aws_secretsmanager_secret.app_database_password_secret
+    aws_secretsmanager_secret.app_database_password_secret,
+    aws_secretsmanager_secret.aes_algorithm,
+    aws_secretsmanager_secret.aes_password,
+    aws_secretsmanager_secret.aes_iv
   ]
 }
 
@@ -215,6 +277,18 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           name      = "db.password"
           valueFrom = aws_secretsmanager_secret.app_database_password_secret.arn
+        },
+        {
+          name      = "customer.data.removal.aes.algorithm"
+          valueFrom = aws_secretsmanager_secret.aes_algorithm.arn
+        },
+        {
+          name      = "customer.data.removal.aes.password"
+          valueFrom = aws_secretsmanager_secret.aes_password.arn
+        },
+        {
+          name      = "customer.data.removal.aes.iv"
+          valueFrom = aws_secretsmanager_secret.aes_iv.arn
         }
       ]
     }
@@ -222,7 +296,10 @@ resource "aws_ecs_task_definition" "task_definition" {
 
 
   depends_on = [
-    aws_cloudwatch_log_group.service_log_group
+    aws_cloudwatch_log_group.service_log_group,
+    aws_secretsmanager_secret.aes_algorithm,
+    aws_secretsmanager_secret.aes_password,
+    aws_secretsmanager_secret.aes_iv,
   ]
 }
 
