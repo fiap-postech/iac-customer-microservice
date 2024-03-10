@@ -32,7 +32,7 @@ locals {
       name = "prd-customer-remove-data-response-queue"
     }
     remove_customer_data = {
-      name = "prd-purchase-remove-customer-data-queue"
+      name = "prd-customer-remove-customer-data-queue"
     }
   }
 }

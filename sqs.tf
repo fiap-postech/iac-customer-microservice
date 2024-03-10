@@ -33,9 +33,6 @@ resource "aws_sqs_queue" "remove_customer_data_dlq" {
   sqs_managed_sse_enabled    = local.sqs.sqs_managed_sse_enabled
 }
 
-
-###
-
 resource "aws_sns_topic_subscription" "get_customer_remove_events" {
   topic_arn            = aws_sns_topic.customer_data_removal_topic.arn
   protocol             = local.subscription.through_queue.protocol
